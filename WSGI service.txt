@@ -1,0 +1,14 @@
+# WSGI Service config file
+  [Unit]
+  Description=Gunicorn instance to serve peak Flask app
+  After=network.target
+
+  [Service]
+  User=<pythonflask>
+  Group=www-data
+  WorkingDirectory=</home/tony/hike>
+  Environment="PATH=</home/tony/env/teton/bin>"
+  ExecStart=/home/tony/env/<teton>/bin/gunicorn --workers 3 --bind unix:peak.sock -m 007 wsgi:app
+
+  [Install]
+  WantedBy=multi-user.target

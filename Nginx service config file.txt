@@ -1,0 +1,10 @@
+#Nginx service config file
+    server {
+        listen 80;
+		server_name <dns_record>;
+	
+	    location / {
+	        include proxy_params;
+		    proxy_pass http://unix:</home/tony/hike/peak.sock>;
+		    }
+	    }

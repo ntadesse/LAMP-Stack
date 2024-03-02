@@ -1,0 +1,67 @@
+adduser <pythonflask>
+usermod -aG sudo <pythonflask>
+vim /etc/ssh/sshd-config
+  #edite passwordaauthentication to yes
+systemctl restart sshd
+exit
+ssh <ip-addr>@<pythonflask>
+git clone <git repository>
+ls
+python3 -m venv ~/env/<teton> # create virtual enviroment
+source ~/env/teton/bin/activate
+pip install flask
+cd /<hike>
+python3 peak.python3
+ctrl+c
+pip install gunicorn
+ls
+vim wsgi.py
+  from peak import app 
+  
+  if __name__ == '__main__':
+      app.run()
+gunicorn --bind 0.0.0.0:5000 wsgi:app
+deactivate
+sudo vim /etc/systemd/system/peak.service
+  # WSGI Service config file
+  [Unit]
+  Description=Gunicorn instance to serve peak Flask app
+  After=network.target
+
+  [Service]
+  User=<pythonflask>
+  Group=www-data
+  WorkingDirectory=</home/tony/hike>
+  Environment="PATH=</home/tony/env/teton/bin>"
+  ExecStart=/home/tony/env/<teton>/bin/gunicorn --workers 3 --bind unix:peak.sock -m 007 wsgi:app
+
+  [Install]
+  WantedBy=multi-user.target
+sudo systemctl start <peak>
+sudo systemctl deamon_reload
+sudo systemctl start <peak>
+sudo systemctl enable <peak>
+sudo systemctl status <peak>
+
+sudo apt install nginx
+sudo vim /etc/nginx/sites-available/peak.conf
+  #Nginx service config file
+    server {
+        listen 80;
+		server_name <dns_record>;
+	
+	    location / {
+	        include proxy_params;
+		    proxy_pass http://unix:</home/tony/hike/peak.sock>;
+		    }
+	    }
+sudo ls -s /etc/nginx/sites-available/<peak.conf> /etc/nginx/sites-enabled/
+
+sudo ufw status
+sudo ufw delete allow 5000
+sudo ufw allow "Nginx Full"
+sudo ufw status
+
+#Error Debuging for permission denied
+sudo tail /var/log/nginx/error.log
+sudo chmod 775 /home/<tony>/
