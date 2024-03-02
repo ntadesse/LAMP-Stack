@@ -1,0 +1,10 @@
+#Create a systemd service file to start up uWSGI when the system boots
+[Unit]
+Description=uwsgi emperor for micro domains website
+After=network.target
+[Service]
+User=udoms
+Restart=always
+ExecStart=/home/udoms/env/md/bin/uwsgi --emperor /home/udoms/env/md/vassals --uid www-data --gid www-data
+[Install]
+WantedBy=multi-user.target

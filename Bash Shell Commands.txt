@@ -1,0 +1,79 @@
+ssh <username>@<domain>
+adduser <udoms>
+usermod -aG sudo <udoms>
+vim /etc/ssh/sshd-config
+  #edite passwordaauthentication to yes
+systemctl restart sshd
+exit
+ssh <username>@<udoms>
+sudo apt-get install pyton3-venv
+makdir env
+python3 -m venv /home/udoms/env/md
+source ~/env/md/bin/activate
+which python3
+pip install django
+django-admin.py startproject microdomains
+cd microdomains
+ls
+python manage.py runserver 0.0.0.0:8000
+vim microdomains/setting.py
+    - ALLOWED_HOSTS = ['domain.name', 'www.domain.name']
+ctrl+c
+##Install uWSGI
+sudo apt-get install python3.8-dev
+sudo apt-get install gcc
+pip install uwsgi
+vim test.py
+  def application(env, start_response):
+      start_response('200 OK', [('Content-Type','text/html')])
+      return [b"Hello World!"]
+uwsgi --http :8000 --wsgi-file test.py  #testing defualt test file
+ctrl+c
+uwsgi --http :8000 --module microdomains.wsgi #testing defualt wsgi in microdomains
+
+##configure Nginx Server
+sudo apt-get install nginx -y
+vim /etc/nginx/sites-available/microdomains.conf
+
+vim uwsgi_params
+
+sudo ln -s /etc/nginx/sites-available/microdomains.conf /etc/nginx/sites-enabled/
+
+vim microdomains/settings.py
+  add import os # at the begining
+  add STATIC_ROOT = os.path.join(BASE_DIR, "static/") #at the very end
+python manage.py collectstatic
+
+mkdir media
+wget https://upload.wikimedia.org/wikipedia/commons/b/b9/First-google-logo.gif -O media/media.gif
+sudo /etc/init.d/nginx restart
+
+#Get Nginx, uWSGI, and Django to Work Together
+uwsgi --socket microdomains.sock --module microdomains.wsgi --chmod-socket=666
+
+#Configure uWSGI for Production
+vim microdomains_uwsgi.ini
+
+cd /home/udoms/env/md/
+mkdir vassals
+sudo ln -s /home/udoms/microdomains/microdomains_uwsgi.ini /home/udoms/env/md/vassals/
+uwsgi --emperor /home/udoms/env/md/vassals --uid www-data --gid www-data
+sudo reboot
+ssh <username>@<domain>
+source ~/env/md/bin/activate
+uwsgi --emperor /home/udoms/env/md/vassals --uid www-data --gid www-data
+vim etc/systemd/system/emperor.uwsgi.service
+
+systemctl enable emperor.uwsgi.service
+systemctl start emperor.uwsgi.service
+
+systemctl status emperor.uwsgi.service
+systemctl stop emperor.uwsgi.service
+
+#enabling ssl certificate
+sudo apt install snapd
+sudo snap install core; sudo snap refresh core
+sudo snap install --classic certbot
+sudo ln -s /snap/bin/certbot /usr/bin/certbot
+sudo certbot --nginx
+sudo systemctl restart emperor.uwsgi.service
